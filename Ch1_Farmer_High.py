@@ -26,9 +26,9 @@ sell_price_s_low = 10
 
 quota_s = 6000
 
-yield_w = 2.5 * 0.8
-yield_c = 3 * 0.8
-yield_s = 20 * 0.8
+yield_w = 2.5 * 1.2
+yield_c = 3 * 1.2
+yield_s = 20 * 1.2
 
 # ============================================
 # CREATE SOLVER
