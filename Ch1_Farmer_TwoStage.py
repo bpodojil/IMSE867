@@ -4,7 +4,7 @@
 from ortools.linear_solver import pywraplp
 
 # ============================================
-# DECLARE VARIABLES
+# DECLARE CONSTANTS
 # ============================================
 total_land = 500
 
