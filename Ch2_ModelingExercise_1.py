@@ -31,6 +31,9 @@ b_demand = 200
 a_price = 50
 b_price = 60
 
+a_revenue = a_price - a_c1_req * c1_cost - a_c2_req * c2_cost
+b_revenue = b_price - b_c1_req * c1_cost - b_c2_req * c2_cost
+
 # ============================================
 # CREATE SOLVER
 # ============================================
@@ -42,21 +45,18 @@ if not solver:
 # ============================================
 # DECISION VARIABLES
 # ============================================
-x_a = solver.NumVar(0, solver.infinity(), 'Batches_of_Product_A')
-x_b = solver.NumVar(0, solver.infinity(), 'Batches_of_Product_B')
-x_cap1 = solver.NumVar(0, solver.infinity(), 'Capacity_for_Component_1')
-x_cap2 = solver.NumVar(0, solver.infinity(), 'Capacity_for_Component_2')
 x_c1 = solver.NumVar(0, solver.infinity(), 'Batches_of_Component_1')
 x_c2 = solver.NumVar(0, solver.infinity(), 'Batches_of_Component_2')
+x_a = solver.NumVar(0, solver.infinity(), 'Batches_of_Product_A')
+x_b = solver.NumVar(0, solver.infinity(), 'Batches_of_Product_B')
 
 # ============================================
 # OBJECTIVE FUNCTION
 # ============================================
 # Maximize Profit
 solver.Maximize(
-    a_price * x_a + b_price * x_b
-    - c1_capacity_cost * x_cap1 - c2_capacity_cost * x_cap2
-    - c1_cost * x_c1 - c2_cost * x_c2
+    a_revenue * x_a + b_revenue * x_b
+    - c1_capacity_cost * x_c1 - c2_capacity_cost * x_c2
 )
 
 # ============================================
@@ -64,10 +64,12 @@ solver.Maximize(
 # ============================================
 solver.Add(x_a <= a_demand)  # Demand for A
 solver.Add(x_b <= b_demand)  # Demand for B
-solver.Add(x_c1 <= c1_batch * (x_cap1 + c1_current_capacity))  # Production of C1 cannot exceed capacity
-solver.Add(x_c2 <= c2_batch * (x_cap2 + c2_current_capacity))  # Production of C2 cannot exceed capacity
-solver.Add(x_a <= a_c1_req * x_c1 + a_c2_req * x_c2)  # Product A component requirements
-solver.Add(x_b <= b_c1_req * x_c1 + b_c2_req * x_c2)  # Product B component requirements
+solver.Add(x_c1 + x_c2 <= capacity_limit)
+solver.Add(x_c1 >= c1_current_capacity)
+solver.Add(x_c2 >= c2_current_capacity)
+solver.Add(a_c1_req * x_a + b_c1_req * x_b <= c1_batch * x_c1)  # Use of component C1
+solver.Add(a_c2_req * x_a + b_c2_req * x_b <= c2_batch * x_c2)  # Use of component C2
+
 
 # ============================================
 # SOLVE
@@ -90,8 +92,3 @@ elif status == pywraplp.Solver.ABNORMAL:
     print("Solver stopped due to an abnormal error.")
 else:
     print("Solver ended with status code:", status)
-
-else:
-pass
-
-print("All Problems Solved!")
